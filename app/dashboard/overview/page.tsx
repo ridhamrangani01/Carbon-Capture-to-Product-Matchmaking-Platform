@@ -171,7 +171,61 @@ export default function DashboardOverviewPage() {
             </Link>
           </div>
         </div>
+
+        {/* Demo Requests Widget */}
+        <UserDemoRequestsWidget />
       </div>
     </DashboardLayout>
   );
 }
+
+function UserDemoRequestsWidget() {
+  const [demoRequests, setDemoRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUserDemos() {
+      try {
+        const res = await fetch("/api/demo-requests");
+        if (res.ok) {
+          const json = await res.json();
+          setDemoRequests(json.data || []);
+        }
+      } catch (e) {
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUserDemos();
+  }, []);
+
+  if (loading || demoRequests.length === 0) return null;
+
+  return (
+    <div className="p-6 rounded-2xl bg-[#083324] border border-emerald-500/30 space-y-4 shadow-xl">
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#22c55e]" />
+          <h3 className="text-sm font-bold text-white">Your Technical Demo Requests</h3>
+        </div>
+        <span className="text-xs font-mono text-emerald-400 font-semibold">{demoRequests.length} Active Request(s)</span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {demoRequests.map((req) => (
+          <div key={req.id} className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-white">{req.companyName}</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                {req.status}
+              </span>
+            </div>
+            <p className="text-white/60 text-[11px]">Request ID: <span className="font-mono text-emerald-400">{req.id}</span></p>
+            <p className="text-white/40 text-[10px]">Submitted: {new Date(req.createdAt).toLocaleDateString()}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+

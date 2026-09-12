@@ -20,11 +20,13 @@ import {
   Menu,
   X,
   ChevronRight,
+  Calendar,
   ArrowLeft,
 } from "lucide-react";
 
 const adminNavItems = [
   { name: "Admin Console Overview", href: "/admin", icon: ShieldCheck },
+  { name: "Demo Requests", href: "/admin/demo-requests", icon: Calendar },
   { name: "User Governance", href: "/admin/users", icon: Users },
   { name: "Organizations", href: "/admin/organizations", icon: Building },
   { name: "System Documents", href: "/admin/documents", icon: FileText },

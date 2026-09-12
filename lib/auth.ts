@@ -39,3 +39,20 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     organizationName: user.organization?.name,
   };
 }
+
+export interface UserSession {
+  userId: string;
+  email: string;
+  role: string;
+}
+
+export async function getSession(): Promise<UserSession | null> {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  return {
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+  };
+}
+
