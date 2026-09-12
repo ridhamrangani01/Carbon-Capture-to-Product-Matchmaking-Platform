@@ -116,24 +116,6 @@ export function ThreeDText({
         <span className="relative z-10 block bg-gradient-to-b from-[#ffffff] via-[#6ee7a0] to-[#22c55e] bg-clip-text text-transparent drop-shadow-[0_10px_25px_rgba(34,197,94,0.35)]">
           {text}
         </span>
-
-        {/* Soft Green Reflection Light Sweep Pass across "MATCHING" */}
-        {highlight && (
-          <motion.span
-            aria-hidden="true"
-            initial={{ x: "-100%" }}
-            animate={{ x: "200%" }}
-            transition={{
-              duration: 4.5,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatDelay: 3,
-              ease: "easeInOut",
-            }}
-            className="absolute inset-0 pointer-events-none mix-blend-overlay bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 bg-clip-text text-transparent"
-          >
-            {text}
-          </motion.span>
-        )}
       </motion.div>
     </div>
   );
