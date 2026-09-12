@@ -2,18 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { sendDemoConfirmationEmail, sendAdminDemoNotificationEmail } from "@/lib/email/service";
+import {
+  normalizeIndianPhone,
+  isValidIndianPinCode,
+  isValidGSTIN,
+  generateReadableRequestId,
+} from "@/lib/validation/indian-phone";
 import { z } from "zod";
 
 const createDemoSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  workEmail: z.string().email("Invalid work email address"),
-  companyName: z.string().min(2, "Company / Organization name is required"),
-  role: z.string().min(2, "Role is required"),
+  workEmail: z.string().email("Enter a valid work email address"),
+  companyName: z.string().min(2, "Company / Organization is required"),
+  role: z.string().min(2, "Please select your primary role"),
   phone: z.string().optional().nullable(),
   jobTitle: z.string().optional().nullable(),
   companySize: z.string().optional().nullable(),
   industry: z.string().optional().nullable(),
-  country: z.string().optional().nullable(),
+  country: z.string().optional().default("India"),
+  state: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  pincode: z.string().optional().nullable(),
+  gstin: z.string().optional().nullable(),
   message: z.string().optional().nullable(),
   preferredDate: z.string().optional().nullable(),
   preferredTime: z.string().optional().nullable(),
@@ -44,10 +54,46 @@ export async function POST(req: NextRequest) {
       companySize,
       industry,
       country,
+      state,
+      city,
+      pincode,
+      gstin,
       message,
       preferredDate,
       preferredTime,
     } = validation.data;
+
+    // Validate & Normalize Indian Mobile Number if provided
+    let normalizedPhone: string | null = null;
+    if (phone && phone.trim()) {
+      normalizedPhone = normalizeIndianPhone(phone);
+      if (!normalizedPhone) {
+        return NextResponse.json(
+          { error: "Enter a valid 10-digit Indian mobile number." },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate Indian PIN Code if provided
+    if (pincode && pincode.trim()) {
+      if (!isValidIndianPinCode(pincode)) {
+        return NextResponse.json(
+          { error: "Enter a valid 6-digit PIN Code." },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate GSTIN if provided
+    if (gstin && gstin.trim()) {
+      if (!isValidGSTIN(gstin)) {
+        return NextResponse.json(
+          { error: "Enter a valid 15-character Indian GSTIN format." },
+          { status: 400 }
+        );
+      }
+    }
 
     // Rate Limiting / Duplicate Check: Prevent duplicate submissions for same email within 5 minutes
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
@@ -83,19 +129,29 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Generate human-friendly Readable Request ID (e.g. C2P-2026-000124)
+    const count = await prisma.demoRequest.count();
+    const readableId = generateReadableRequestId(count + 1);
+
     // Persist DemoRequest in database
     const demoRequest = await prisma.demoRequest.create({
       data: {
+        readableId,
         userId,
         organizationId,
         fullName,
         workEmail: workEmail.toLowerCase(),
-        phone: phone || null,
+        phone: normalizedPhone,
         companyName,
         jobTitle: jobTitle || null,
         companySize: companySize || null,
         industry: industry || null,
-        country: country || null,
+        country: country || "India",
+        state: state || null,
+        city: city || null,
+        pincode: pincode ? pincode.trim() : null,
+        gstin: gstin ? gstin.trim().toUpperCase() : null,
+        timezone: "Asia/Kolkata",
         role,
         message: message || null,
         preferredDate: preferredDate || null,
@@ -110,12 +166,15 @@ export async function POST(req: NextRequest) {
       data: {
         userId: userId || null,
         action: "DEMO_REQUEST_CREATED",
-        resource: `DemoRequest:${demoRequest.id}`,
+        resource: `DemoRequest:${readableId}`,
         details: JSON.stringify({
+          readableId,
           fullName,
           workEmail,
           companyName,
-          role,
+          city,
+          state,
+          country: "India",
         }),
       },
     });
@@ -126,30 +185,39 @@ export async function POST(req: NextRequest) {
         data: {
           userId,
           title: "Demo Request Submitted",
-          message: `Your demo request (ID: ${demoRequest.id}) has been received. Our team will contact you shortly.`,
+          message: `Your demo request (ID: ${readableId}) has been received. Our team will contact you shortly.`,
         },
       });
     }
+
+    // Format location string for email
+    const locationStr = [city, state, country || "India"].filter(Boolean).join(", ");
 
     // Dispatch Confirmation Email & Admin Notification
     const userEmailResult = await sendDemoConfirmationEmail({
       toEmail: workEmail,
       fullName,
-      requestId: demoRequest.id,
+      requestId: readableId,
       companyName,
       role,
+      location: locationStr,
+      preferredDate: preferredDate || undefined,
+      preferredTime: preferredTime || undefined,
     });
 
     await sendAdminDemoNotificationEmail({
       toAdminEmail: process.env.DEMO_NOTIFICATION_EMAIL || "admin@upcarb.com",
-      requestId: demoRequest.id,
+      requestId: readableId,
       fullName,
       workEmail,
-      phone,
+      phone: normalizedPhone,
       companyName,
       role,
       industry,
-      country,
+      country: country || "India",
+      state,
+      city,
+      pincode,
       message,
       preferredDate,
       preferredTime,
@@ -161,10 +229,14 @@ export async function POST(req: NextRequest) {
         message: "Demo request created successfully",
         data: {
           id: demoRequest.id,
+          readableId: demoRequest.readableId,
           fullName: demoRequest.fullName,
           workEmail: demoRequest.workEmail,
           companyName: demoRequest.companyName,
           role: demoRequest.role,
+          city: demoRequest.city,
+          state: demoRequest.state,
+          country: demoRequest.country,
           status: demoRequest.status,
           createdAt: demoRequest.createdAt,
           emailDeliveryMode: userEmailResult.mode,

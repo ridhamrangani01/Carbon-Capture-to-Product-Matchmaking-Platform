@@ -19,10 +19,12 @@ import {
   Check,
   X,
   AlertCircle,
+  MapPin,
 } from "lucide-react";
 
 interface DemoRequest {
   id: string;
+  readableId?: string | null;
   fullName: string;
   workEmail: string;
   phone?: string | null;
@@ -31,6 +33,11 @@ interface DemoRequest {
   companySize?: string | null;
   industry?: string | null;
   country?: string | null;
+  state?: string | null;
+  city?: string | null;
+  pincode?: string | null;
+  gstin?: string | null;
+  timezone?: string | null;
   role: string;
   message?: string | null;
   preferredDate?: string | null;
@@ -122,6 +129,8 @@ export default function AdminDemoRequestsPage() {
       r.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.workEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.readableId && r.readableId.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (r.city && r.city.toLowerCase().includes(searchQuery.toLowerCase())) ||
       r.id.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === "ALL" || r.status === statusFilter;
@@ -161,11 +170,11 @@ export default function AdminDemoRequestsPage() {
         <div className="border-b border-white/10 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <span className="text-[10px] uppercase font-bold text-[#22c55e] tracking-wider flex items-center gap-1.5 mb-1">
-              <Calendar className="w-4 h-4" /> Customer Inquiries & Product Demos
+              <Calendar className="w-4 h-4" /> Customer Inquiries & Product Demos (India 🇮🇳)
             </span>
             <h1 className="text-3xl font-display font-bold text-white">Demo Requests Governance</h1>
             <p className="text-white/60 text-xs sm:text-sm mt-1">
-              Review applicant details, manage demo scheduling, record internal notes, and track sales pipeline conversions.
+              Review applicant details, manage demo scheduling in IST, record internal notes, and track sales pipeline conversions.
             </p>
           </div>
 
@@ -211,7 +220,7 @@ export default function AdminDemoRequestsPage() {
             <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-3" />
             <input
               type="text"
-              placeholder="Search by name, company, email..."
+              placeholder="Search by ID, name, company, city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#041a12] border border-white/15 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-white/40 focus:border-[#22c55e] focus:outline-none"
@@ -256,10 +265,11 @@ export default function AdminDemoRequestsPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 bg-black/30 text-[11px] font-bold text-white/50 uppercase tracking-wider">
-                    <th className="py-3.5 px-4">Applicant</th>
+                    <th className="py-3.5 px-4">Request ID</th>
+                    <th className="py-3.5 px-4">Applicant & Mobile</th>
                     <th className="py-3.5 px-4">Company & Role</th>
-                    <th className="py-3.5 px-4">Preferred Date</th>
-                    <th className="py-3.5 px-4">Submitted At</th>
+                    <th className="py-3.5 px-4">City / Location</th>
+                    <th className="py-3.5 px-4">Preferred Slot</th>
                     <th className="py-3.5 px-4">Status</th>
                     <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
@@ -267,19 +277,24 @@ export default function AdminDemoRequestsPage() {
                 <tbody className="divide-y divide-white/5 text-xs text-white/90">
                   {filteredRequests.map((req) => (
                     <tr key={req.id} className="hover:bg-white/[0.04] transition-colors">
+                      <td className="py-3.5 px-4 font-mono text-emerald-400 font-bold">
+                        {req.readableId || req.id.slice(0, 10)}
+                      </td>
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-white">{req.fullName}</div>
                         <div className="text-[11px] text-white/50 font-mono">{req.workEmail}</div>
+                        {req.phone && <div className="text-[10px] text-emerald-400 font-mono">{req.phone}</div>}
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-medium text-white">{req.companyName}</div>
                         <div className="text-[11px] text-emerald-400 font-mono">{req.role}</div>
                       </td>
-                      <td className="py-3.5 px-4 text-white/70 font-mono">
-                        {req.preferredDate ? `${req.preferredDate} ${req.preferredTime || ""}` : "Flexible / Unspecified"}
+                      <td className="py-3.5 px-4 text-white/70">
+                        <div>{[req.city, req.state].filter(Boolean).join(", ") || "India 🇮🇳"}</div>
+                        {req.pincode && <div className="text-[10px] text-white/40 font-mono">PIN: {req.pincode}</div>}
                       </td>
-                      <td className="py-3.5 px-4 text-white/50 font-mono text-[11px]">
-                        {new Date(req.createdAt).toLocaleString()}
+                      <td className="py-3.5 px-4 text-white/70 font-mono">
+                        {req.preferredDate ? `${req.preferredDate} ${req.preferredTime || "IST"}` : "Flexible / IST"}
                       </td>
                       <td className="py-3.5 px-4">{getStatusBadge(req.status)}</td>
                       <td className="py-3.5 px-4 text-right">
@@ -305,7 +320,7 @@ export default function AdminDemoRequestsPage() {
               <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-black/40">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-[#22c55e]" />
-                  <h3 className="text-lg font-bold text-white">Demo Request #{selectedRequest.id}</h3>
+                  <h3 className="text-lg font-bold text-white">Demo Request #{selectedRequest.readableId || selectedRequest.id}</h3>
                 </div>
                 <button
                   onClick={() => setSelectedRequest(null)}
@@ -348,14 +363,24 @@ export default function AdminDemoRequestsPage() {
                   </div>
                   {selectedRequest.phone && (
                     <div>
-                      <span className="text-white/40 uppercase font-mono text-[10px] block">Phone</span>
-                      <span className="text-white">{selectedRequest.phone}</span>
+                      <span className="text-white/40 uppercase font-mono text-[10px] block">Mobile (India)</span>
+                      <span className="text-emerald-400 font-mono">{selectedRequest.phone}</span>
                     </div>
                   )}
-                  {selectedRequest.jobTitle && (
+                  <div>
+                    <span className="text-white/40 uppercase font-mono text-[10px] block">Location</span>
+                    <span className="text-white">{[selectedRequest.city, selectedRequest.state, "India 🇮🇳"].filter(Boolean).join(", ")}</span>
+                  </div>
+                  {selectedRequest.pincode && (
                     <div>
-                      <span className="text-white/40 uppercase font-mono text-[10px] block">Job Title</span>
-                      <span className="text-white">{selectedRequest.jobTitle}</span>
+                      <span className="text-white/40 uppercase font-mono text-[10px] block">PIN Code</span>
+                      <span className="text-white font-mono">{selectedRequest.pincode}</span>
+                    </div>
+                  )}
+                  {selectedRequest.gstin && (
+                    <div>
+                      <span className="text-white/40 uppercase font-mono text-[10px] block">GSTIN</span>
+                      <span className="text-white font-mono">{selectedRequest.gstin}</span>
                     </div>
                   )}
                 </div>
@@ -373,7 +398,7 @@ export default function AdminDemoRequestsPage() {
                 {/* Admin Status & Scheduling Controls */}
                 <div className="border-t border-white/10 pt-4 space-y-4">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                    Governance & Sales Status Management
+                    Governance & Sales Status Management (IST)
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -394,7 +419,7 @@ export default function AdminDemoRequestsPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-white/70">Scheduled Timestamp</label>
+                      <label className="block text-xs font-semibold text-white/70">Scheduled Timestamp (IST)</label>
                       <input
                         type="datetime-local"
                         value={editScheduledAt}

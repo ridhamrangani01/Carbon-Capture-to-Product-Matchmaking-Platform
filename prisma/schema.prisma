@@ -284,6 +284,7 @@ model PasswordResetToken {
 
 model DemoRequest {
   id             String    @id @default(cuid())
+  readableId     String?   @unique
   userId         String?
   organizationId String?
   fullName       String
@@ -293,7 +294,12 @@ model DemoRequest {
   jobTitle       String?
   companySize    String?
   industry       String?
-  country        String?
+  country        String?   @default("India")
+  state          String?
+  city           String?
+  pincode        String?
+  gstin          String?
+  timezone       String?   @default("Asia/Kolkata")
   role           String    @default("EMITTER")
   message        String?
   preferredDate  String?
