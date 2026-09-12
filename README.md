@@ -1,4 +1,4 @@
-# 🌍 CarbonLink
+# 🌍 UpCarb.
 
 > **A B2B Marketplace Connecting Captured CO₂ Supply with Industrial Utilizers.**
 
