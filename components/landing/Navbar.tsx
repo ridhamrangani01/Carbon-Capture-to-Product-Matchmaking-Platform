@@ -85,14 +85,14 @@ export function Navbar() {
                     <span>For Industrial Emitters</span>
                   </Link>
                   <Link
-                    href="/solutions/construction"
+                    href="/solutions/utilizers"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors"
                   >
                     <HardHat className="h-3.5 w-3.5 text-[#22c55e]" />
                     <span>For Product Off-Takers</span>
                   </Link>
                   <Link
-                    href="/solutions/smes"
+                    href="/solutions/emitters"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors"
                   >
                     <Building2 className="h-3.5 w-3.5 text-[#22c55e]" />
@@ -105,7 +105,7 @@ export function Navbar() {
                     By Function
                   </div>
                   <Link
-                    href="/solutions/banks"
+                    href="/solutions/researchers"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors"
                   >
                     <Landmark className="h-3.5 w-3.5 text-[#22c55e]" />
@@ -119,11 +119,11 @@ export function Navbar() {
                     <span>For ESG Consultants</span>
                   </Link>
                   <Link
-                    href="/solutions/saas"
+                    href="/solutions"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors"
                   >
                     <Code className="h-3.5 w-3.5 text-[#22c55e]" />
-                    <span>For API Integrations</span>
+                    <span>All Solutions Overview</span>
                   </Link>
                 </div>
               </div>
@@ -147,29 +147,32 @@ export function Navbar() {
               <div className="absolute left-0 top-full pt-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-150 z-50">
                 <div className="w-[200px] rounded-xl border border-white/10 bg-[#06291d] shadow-2xl p-2 text-xs">
                   <Link
-                    href="/resources"
+                    href="/resources/studies"
                     className="block px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors"
                   >
                     Study Library
                   </Link>
                   <Link
-                    href="/news"
+                    href="/resources/news"
                     className="block px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors"
                   >
                     News & Insights
                   </Link>
                   <Link
-                    href="/press"
+                    href="/resources"
                     className="block px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors"
                   >
-                    Press Releases
+                    All Resources
                   </Link>
                 </div>
               </div>
             </div>
 
-            <Link href="/how-it-works#science" className="hover:text-white transition-colors">
+            <Link href="/about" className="hover:text-white transition-colors">
               About
+            </Link>
+            <Link href="/contact" className="hover:text-white transition-colors">
+              Contact
             </Link>
           </nav>
 

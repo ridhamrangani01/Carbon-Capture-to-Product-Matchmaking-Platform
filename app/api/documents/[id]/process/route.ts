@@ -4,7 +4,7 @@ import { processDocumentPipeline } from "@/lib/documents/processor";
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -12,7 +12,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const docId = params.id;
+    const { id: docId } = await params;
     const processedDoc = await processDocumentPipeline(docId, user.id);
 
     return NextResponse.json({

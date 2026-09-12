@@ -24,3 +24,18 @@ export async function getUserByEmail(email: string) {
     include: { organization: true },
   });
 }
+
+export async function getCurrentUser(): Promise<SessionUser | null> {
+  const user = await db.user.findFirst({
+    include: { organization: true },
+  });
+  if (!user) return null;
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role as any,
+    organizationId: user.organizationId,
+    organizationName: user.organization?.name,
+  };
+}
