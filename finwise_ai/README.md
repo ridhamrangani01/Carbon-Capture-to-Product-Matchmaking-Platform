@@ -1,4 +1,4 @@
-# FinWise AI – Personalized & Responsible Banking Assistant
+    # FinWise AI – Personalized & Responsible Banking Assistant
 
 > **DA-IICT HackOut Hackathon Prototype**  
 > *"Customer benefit first, bank revenue second."*

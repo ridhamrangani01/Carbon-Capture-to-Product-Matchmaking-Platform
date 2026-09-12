@@ -17,49 +17,52 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization         Organization?    @relation(fields: [organizationId], references: [id])
-  carbonSources        CarbonSource[]
-  contactRequestsSent  ContactRequest[] @relation("RequestsSent")
-  contactRequestsRecv  ContactRequest[] @relation("RequestsReceived")
-  savedMatches         SavedMatch[]
-  notifications        Notification[]
+  organization        Organization?    @relation(fields: [organizationId], references: [id])
+  carbonSources       CarbonSource[]
+  contactRequestsSent ContactRequest[] @relation("RequestsSent")
+  contactRequestsRecv ContactRequest[] @relation("RequestsReceived")
+  savedMatches        SavedMatch[]
+  notifications       Notification[]
 }
 
 model Organization {
-  id          String   @id @default(cuid())
-  name        String
-  type        String   // "Industrial Emitter", "Chemical Manufacturer", "Research Institute", "CleanTech Venture"
-  location    String
-  website     String?
-  verified    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  type      String   // "Industrial Emitter", "Chemical Manufacturer", "Research Institute", "CleanTech Venture"
+  location  String
+  website   String?
+  verified  Boolean  @default(true)
+  createdAt DateTime @default(now())
 
   users         User[]
   carbonSources CarbonSource[]
   products      Product[]
+  documents     Document[]
+  suppliers     Supplier[]
+  reports       Report[]
 }
 
 model CarbonSource {
-  id                     String   @id @default(cuid())
-  title                  String
-  emitterId              String
-  organizationId         String
-  location               String
-  quantityValue          Float
-  quantityUnit           String   // "tonnes/month", "tonnes/year", "tonnes/day", "kg/day"
-  annualQuantityTonnes   Float
-  purityPercent          Float
-  physicalState          String   // "Gas", "Liquid", "Supercritical", "Solid"
-  temperatureC           Float
-  pressureBar            Float
-  captureTechnology       String
-  availabilityFrequency  String   // "Continuous 24/7", "Batch Daily", "Intermittent", "Seasonal"
-  transportRadiusKm      Float    @default(200.0)
-  impuritiesNotes        String?
-  certificationStatus    String   @default("Verified Third-Party")
-  status                 String   @default("ACTIVE") // "ACTIVE", "MATCHED", "INACTIVE"
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  title                 String
+  emitterId             String
+  organizationId        String
+  location              String
+  quantityValue         Float
+  quantityUnit          String   // "tonnes/month", "tonnes/year", "tonnes/day", "kg/day"
+  annualQuantityTonnes  Float
+  purityPercent         Float
+  physicalState         String   // "Gas", "Liquid", "Supercritical", "Solid"
+  temperatureC          Float
+  pressureBar           Float
+  captureTechnology     String
+  availabilityFrequency String   // "Continuous 24/7", "Batch Daily", "Intermittent", "Seasonal"
+  transportRadiusKm     Float    @default(200.0)
+  impuritiesNotes       String?
+  certificationStatus   String   @default("Verified Third-Party")
+  status                String   @default("ACTIVE") // "ACTIVE", "MATCHED", "INACTIVE"
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   emitter      User         @relation(fields: [emitterId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -155,4 +158,124 @@ model Notification {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id              String   @id @default(cuid())
+  organizationId  String
+  uploadedBy      String
+  filename        String
+  fileType        String
+  fileSize        Int
+  storagePath     String
+  status          String   @default("UPLOADED") // UPLOADED, QUEUED, PROCESSING, EXTRACTED, MATCHING, COMPLETED, FAILED, REVIEW_REQUIRED
+  documentType    String   @default("INVOICE") // INVOICE, QUOTATION, BOM, ENERGY_BILL, STREAM_REPORT
+  supplierName    String?
+  invoiceNumber   String?
+  issueDate       DateTime?
+  currency        String   @default("USD")
+  totalCO2eKg     Float    @default(0.0)
+  confidenceAvg   Float    @default(0.0)
+  processingError String?
+  uploadedAt      DateTime @default(now())
+  processedAt     DateTime?
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lineItems    DocumentLineItem[]
+}
+
+model DocumentLineItem {
+  id                     String   @id @default(cuid())
+  documentId             String
+  description            String
+  quantity               Float
+  unit                   String
+  unitPrice              Float    @default(0.0)
+  category               String   @default("General Raw Material")
+  supplier               String?
+  country                String   @default("Global")
+  matchedEmissionFactorId String?
+  co2eKg                 Float    @default(0.0)
+  confidence             Float    @default(0.0)
+  status                 String   @default("MATCHED")
+
+  document       Document        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  emissionFactor EmissionFactor? @relation(fields: [matchedEmissionFactorId], references: [id])
+}
+
+model EmissionFactor {
+  id             String   @id @default(cuid())
+  name           String
+  category       String
+  subcategory    String?
+  factorValue    Float    // kg CO2e / unit
+  unit           String   // e.g. "kg", "kWh", "litre"
+  geography      String   @default("Global")
+  sourceDatabase String   @default("GHG Protocol / ecoinvent 3.10")
+  version        String   @default("2026.1")
+  qualityGrade   String   @default("Verified A-Grade")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  lineItems DocumentLineItem[]
+}
+
+model UtilizationPathway {
+  id                   String   @id @default(cuid())
+  name                 String
+  category             String   // E-METHANOL, E-FUELS, CONCRETE_MINERALIZATION, SYNTHETIC_FUELS, CHEMICAL_FEEDSTOCK
+  requiredPurity       Float
+  minVolume            Float
+  maxVolume            Float
+  requiredPressure     Float
+  requiredState        String   @default("Gas")
+  geography            String   @default("Global")
+  conversionEfficiency Float    @default(0.92)
+  estimatedValuePerTon Float    @default(150.0)
+  status               String   @default("ACTIVE")
+  createdAt            DateTime @default(now())
+}
+
+model Supplier {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  country        String
+  category       String
+  co2eScoreAvg   Float    @default(0.0)
+  status         String   @default("VERIFIED")
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id              String   @id @default(cuid())
+  organizationId  String
+  title           String
+  type            String   // "SUMMARY", "SCOPE_1", "SCOPE_2", "SCOPE_3", "CBAM", "SOURCE_MATCHING"
+  format          String   @default("PDF") // PDF, CSV, JSON
+  downloadUrl     String
+  totalCO2eTonnes Float    @default(0.0)
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // LOGIN, REGISTER, DOCUMENT_UPLOAD, DOCUMENT_PROCESS, MATCH_CREATED, ADMIN_ACTION
+  resource  String
+  ipAddress String?
+  details   String?
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }

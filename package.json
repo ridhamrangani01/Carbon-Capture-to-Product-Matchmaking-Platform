@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "seed": "node --loader ts-node/registration prisma/seed.ts || npx ts-node prisma/seed.ts"
+    "seed": "npx prisma db seed"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
