@@ -1,0 +1,158 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  passwordHash   String
+  role           String   @default("EMITTER") // "EMITTER", "UTILIZER", "RESEARCHER", "ADMIN"
+  organizationId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization         Organization?    @relation(fields: [organizationId], references: [id])
+  carbonSources        CarbonSource[]
+  contactRequestsSent  ContactRequest[] @relation("RequestsSent")
+  contactRequestsRecv  ContactRequest[] @relation("RequestsReceived")
+  savedMatches         SavedMatch[]
+  notifications        Notification[]
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "Industrial Emitter", "Chemical Manufacturer", "Research Institute", "CleanTech Venture"
+  location    String
+  website     String?
+  verified    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  users         User[]
+  carbonSources CarbonSource[]
+  products      Product[]
+}
+
+model CarbonSource {
+  id                     String   @id @default(cuid())
+  title                  String
+  emitterId              String
+  organizationId         String
+  location               String
+  quantityValue          Float
+  quantityUnit           String   // "tonnes/month", "tonnes/year", "tonnes/day", "kg/day"
+  annualQuantityTonnes   Float
+  purityPercent          Float
+  physicalState          String   // "Gas", "Liquid", "Supercritical", "Solid"
+  temperatureC           Float
+  pressureBar            Float
+  captureTechnology       String
+  availabilityFrequency  String   // "Continuous 24/7", "Batch Daily", "Intermittent", "Seasonal"
+  transportRadiusKm      Float    @default(200.0)
+  impuritiesNotes        String?
+  certificationStatus    String   @default("Verified Third-Party")
+  status                 String   @default("ACTIVE") // "ACTIVE", "MATCHED", "INACTIVE"
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  emitter      User         @relation(fields: [emitterId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  matches      Match[]
+}
+
+model Product {
+  id                       String   @id @default(cuid())
+  name                     String
+  slug                     String   @unique
+  category                 String   // "E-Fuels", "Building Materials", "Chemicals", "Biomass & Agriculture", "Polymers"
+  description              String
+  minCO2Purity             Float
+  maxCO2Purity             Float    @default(100.0)
+  minQuantityTonnesMonth   Float
+  maxQuantityTonnesMonth   Float
+  requiredState            String   // "Gas", "Liquid", "Supercritical", "Any"
+  temperatureMin           Float
+  temperatureMax           Float
+  pressureMin              Float
+  pressureMax              Float
+  technologyReadinessLevel Int      // 1 to 9
+  locationRequirements     String
+  energyIntensity          String   // "High", "Moderate", "Low"
+  estimatedValuePerTon     Float
+  co2UtilizationPotential  String   // e.g. "1.37 t CO2 / t product"
+  organizationId           String?
+  active                   Boolean  @default(true)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  matches      Match[]
+}
+
+model Match {
+  id                 String   @id @default(cuid())
+  carbonSourceId     String
+  productId          String
+  overallScore       Float
+  classification     String   // "EXCELLENT", "STRONG", "POTENTIAL", "WEAK", "POOR"
+  purityScore        Float
+  quantityScore      Float
+  stateScore         Float
+  tempScore          Float
+  pressureScore      Float
+  locationScore      Float
+  trlScore           Float
+  availabilityScore  Float
+  greenReasonsJson   String   // JSON string
+  concernsJson       String   // JSON string
+  recommendationText String
+  createdAt          DateTime @default(now())
+
+  carbonSource    CarbonSource     @relation(fields: [carbonSourceId], references: [id], onDelete: Cascade)
+  product         Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  savedMatches    SavedMatch[]
+  contactRequests ContactRequest[]
+}
+
+model SavedMatch {
+  id        String   @id @default(cuid())
+  userId    String
+  matchId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchId])
+}
+
+model ContactRequest {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  matchId    String
+  message    String
+  status     String   @default("PENDING") // "PENDING", "ACCEPTED", "REJECTED", "CONTACTED"
+  createdAt  DateTime @default(now())
+
+  sender   User  @relation("RequestsSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User  @relation("RequestsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  match    Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 160 70% 12%;
+    --foreground: 0 0% 100%;
+  }
+
+  body {
+    color: rgb(243, 244, 246);
+    background-color: #083324;
+    font-family: var(--font-body), var(--font-display), system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Reference Typography System: Simple. AI Sustainability Proportions */
+  .font-hero-display {
+    font-family: var(--font-carbon-display), var(--font-display), system-ui, sans-serif;
+    letter-spacing: -0.035em;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-display, .pilcrow-h1, .pilcrow-h2 {
+    font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
+  }
+
+  h1, .pilcrow-h1 {
+    font-weight: 400;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+  }
+
+  h2, .pilcrow-h2 {
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+  }
+
+  h3 {
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  p {
+    font-family: var(--font-body), system-ui, sans-serif;
+    line-height: 1.6;
+  }
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-hero-cursor {
+  animation: cursorBlink 1s ease-in-out infinite;
+}
+
+/* Border Beam Laser Animation */
+@keyframes border-beam {
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+.animate-border-beam {
+  animation: border-beam var(--duration) infinite linear var(--delay);
+}
+
+/* Custom Forest Green & Simple. AI Sustainability Design System */
+.bg-forest-hero {
+  background-color: #083324;
+}
+
+.bg-dark-section {
+  background-color: #000000;
+}
+
+.bg-light-section {
+  background-color: #eef2f0;
+  color: #0f172a;
+}
+
+.border-forest {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Custom Wave Line Graph Animation */
+@keyframes waveFlow {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-wave-line {
+  stroke-dasharray: 10, 10;
+  animation: waveFlow 25s linear infinite;
+}
+
+/* Pulse animation for node dots */
+@keyframes nodePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+}
+
+.animate-node-pulse {
+  animation: nodePulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #083324;
+}
+::-webkit-scrollbar-thumb {
+  background: #14532d;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #22c55e;
+}
