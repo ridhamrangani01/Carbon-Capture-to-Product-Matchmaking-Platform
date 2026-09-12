@@ -1,83 +1,62 @@
 "use client";
-import React from "react";
-import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+
+import React, { useRef } from "react";
+import { useScroll, motion, useTransform } from "framer-motion";
+import { ThreeDText } from "@/components/landing/ThreeDText";
+import { HeroDashboardCard } from "@/components/landing/HeroDashboardCard";
 
 export function HeroScrollDemo() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+
+  const headingOpacity = useTransform(scrollYProgress, [0.05, 0.35], [0.5, 1]);
+
   return (
-    <section className="bg-black text-white py-12 flex flex-col overflow-hidden border-t border-b border-white/10">
-      <ContainerScroll
-        titleComponent={
-          <div className="space-y-4">
-            <span className="inline-block text-xs font-mono font-bold tracking-widest text-[#22c55e] uppercase bg-[#22c55e]/10 border border-[#22c55e]/30 px-3 py-1 rounded-full">
-              Real-Time Carbon Intelligence Dashboard
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-display font-normal text-white tracking-tight leading-[1.05]">
-              Unleash the power of <br />
-              <span className="text-4xl md:text-[5rem] font-display font-normal text-[#22c55e] mt-1 leading-none block tracking-tight">
-                Deterministic CCU Matching
+    <section
+      ref={sectionRef}
+      className="bg-[#000000] text-white py-16 md:py-24 flex flex-col overflow-hidden border-t border-b border-white/10 relative select-none"
+    >
+      {/* Subtle Background Radial Ambient Glow */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.08)_0%,transparent_70%)]" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center space-y-10 relative z-10">
+        
+        {/* Title Component with 3D Hierarchy */}
+        <motion.div style={{ opacity: headingOpacity }} className="space-y-4 max-w-4xl mx-auto">
+          <span className="inline-block text-xs font-mono font-bold tracking-widest text-[#22c55e] uppercase bg-[#22c55e]/10 border border-[#22c55e]/30 px-3.5 py-1.5 rounded-full shadow-[0_0_12px_rgba(34,197,94,0.2)]">
+            Real-Time Carbon Intelligence Dashboard
+          </span>
+
+          <div className="space-y-2">
+            <p className="text-2xl sm:text-4xl font-display font-normal text-white/90 tracking-tight leading-tight">
+              Unleash the power of
+            </p>
+
+            <div className="flex flex-col items-center justify-center gap-1 sm:gap-2">
+              <span className="text-3xl sm:text-5xl md:text-6xl font-display font-normal text-white tracking-tight leading-none block">
+                Deterministic CCU
               </span>
-            </h2>
-          </div>
-        }
-      >
-        {/* Interactive Dashboard Mockup Card inside 3D Tilt Frame */}
-        <div className="w-full h-full bg-[#06291d] p-6 text-left flex flex-col justify-between space-y-6 font-sans">
-          {/* Header Bar */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500" />
-              <div className="w-3 h-3 rounded-full bg-green-500" />
-              <span className="text-xs font-mono text-white/50 ml-2">app.carbon2product.com/live-monitor</span>
-            </div>
-            <span className="text-xs font-mono text-[#22c55e] font-bold bg-[#22c55e]/20 px-3 py-1 rounded-full border border-[#22c55e]/30">
-              ● 100% ONLINE · 8-VECTOR MATCHING
-            </span>
-          </div>
 
-          {/* Stats Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="bg-black/60 p-4 rounded-xl border border-white/10">
-              <span className="text-[11px] font-mono text-white/40 block">TOTAL CO₂ CAPTURED</span>
-              <span className="text-2xl font-bold text-white">48,920 t/yr</span>
-            </div>
-            <div className="bg-black/60 p-4 rounded-xl border border-white/10">
-              <span className="text-[11px] font-mono text-white/40 block">ACTIVE OFF-TAKE OFFERS</span>
-              <span className="text-2xl font-bold text-[#22c55e]">14 Pathways</span>
-            </div>
-            <div className="bg-black/60 p-4 rounded-xl border border-white/10">
-              <span className="text-[11px] font-mono text-white/40 block">AVG STREAM PURITY</span>
-              <span className="text-2xl font-bold text-white">98.4% Food Grade</span>
-            </div>
-            <div className="bg-black/60 p-4 rounded-xl border border-white/10">
-              <span className="text-[11px] font-mono text-white/40 block">MONETIZED VALUE</span>
-              <span className="text-2xl font-bold text-emerald-400">$2,690,600 / yr</span>
+              {/* 3D Centerpiece Text: "MATCHING" */}
+              <div className="pt-2">
+                <ThreeDText
+                  text="MATCHING"
+                  scrollYProgress={scrollYProgress}
+                  className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight"
+                  highlight={true}
+                />
+              </div>
             </div>
           </div>
+        </motion.div>
 
-          {/* Table Preview */}
-          <div className="bg-black/40 rounded-xl border border-white/10 p-4 space-y-3">
-            <div className="flex items-center justify-between text-xs text-white/40 font-mono pb-2 border-b border-white/10">
-              <span>CAPTURE SOURCE</span>
-              <span>UTILIZATION PATHWAY</span>
-              <span>MATCH SCORE</span>
-              <span>COMMERCIAL VALUE</span>
-            </div>
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-white font-bold">Refinery Gas Steam Reformer #04</span>
-              <span className="text-emerald-400">Synthetic E-Methanol Fuel Feedstock</span>
-              <span className="text-[#22c55e] font-bold">99.4% Match</span>
-              <span className="text-white font-bold">$68.50 / t</span>
-            </div>
-            <div className="flex items-center justify-between text-xs font-mono border-t border-white/[0.05] pt-2">
-              <span className="text-white font-bold">Biogas Upgrading Plant Facility B</span>
-              <span className="text-blue-400">Concrete Mineralization Curing</span>
-              <span className="text-[#22c55e] font-bold">96.8% Match</span>
-              <span className="text-white font-bold">$42.00 / t</span>
-            </div>
-          </div>
-        </div>
-      </ContainerScroll>
+        {/* 3D Dashboard Floating Card */}
+        <HeroDashboardCard scrollYProgress={scrollYProgress} />
+
+      </div>
     </section>
   );
 }
